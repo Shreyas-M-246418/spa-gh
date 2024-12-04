@@ -17,13 +17,13 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for access token in URL hash
-    const hash = window.location.hash;
-    if (hash.includes('access_token=')) {
-      const token = hash.match(/access_token=([^&]*)/)[1];
-      if (token) {
-        fetchUserData(token);
-      }
+    // Check for code in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      // Exchange code for token using GitHub's token endpoint
+      exchangeCodeForToken(code);
     }
 
     const storedUser = localStorage.getItem('user');
@@ -32,6 +32,32 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   }, [navigate]);
+
+  const exchangeCodeForToken = async (code) => {
+    try {
+      // GitHub's token endpoint
+      const tokenUrl = 'https://github.com/login/oauth/access_token';
+      const response = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: process.env.REACT_APP_GITHUB_CLIENT_ID,
+          code: code,
+        })
+      });
+
+      const data = await response.json();
+      if (data.access_token) {
+        await fetchUserData(data.access_token);
+      }
+    } catch (error) {
+      console.error('Error exchanging code for token:', error);
+      navigate('/login');
+    }
+  };
 
   const fetchUserData = async (token) => {
     try {
@@ -65,7 +91,7 @@ export const AuthProvider = ({ children }) => {
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
     const redirectUri = window.location.origin + window.location.pathname;
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user&response_type=token`;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user`;
   };
 
   const logout = () => {
