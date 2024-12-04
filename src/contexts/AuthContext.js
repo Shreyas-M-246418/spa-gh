@@ -17,14 +17,13 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for token in URL hash
-    const hash = window.location.hash;
-    const token = hash.match(/access_token=([^&]*)/)?.[1];
+    // Check for code in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
     
-    if (token) {
-      fetchUserData(token);
-      // Clear the hash
-      window.location.hash = '';
+    if (code) {
+      // Instead of exchanging code, use it to fetch user data directly
+      fetchUserDataWithCode(code);
     }
 
     const storedUser = localStorage.getItem('user');
@@ -34,11 +33,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, [navigate]);
 
-  const fetchUserData = async (token) => {
+  const fetchUserDataWithCode = async (code) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Basic ${btoa(`${code}:x-oauth-basic`)}`,
           'Accept': 'application/json'
         }
       });
@@ -56,9 +55,10 @@ export const AuthProvider = ({ children }) => {
       
       setUser(user);
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('gh_token', token);
+      localStorage.setItem('gh_code', code);
       
-      window.location.replace('/#/jobs');
+      // Use navigate instead of window.location
+      navigate('/jobs');
     } catch (error) {
       console.error('Error fetching user data:', error);
       navigate('/login');
@@ -67,16 +67,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
+    const redirectUri = `${window.location.origin}${window.location.pathname}`;
     window.location.href = `https://github.com/login/oauth/authorize?` +
       `client_id=${clientId}&` +
-      `scope=user&` +
-      `response_type=token`;
+      `redirect_uri=${redirectUri}&` +
+      `scope=user`;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    localStorage.removeItem('gh_token');
+    localStorage.removeItem('gh_code');
   };
 
   return (
