@@ -20,6 +20,13 @@ jobs:
           REACT_APP_GITHUB_CLIENT_SECRET: ${{ secrets.REACT_APP_GITHUB_CLIENT_SECRET }}
         run: npm run build
       
+      - name: Download existing tokens
+        run: |
+          mkdir -p build/tokens
+          if curl -s "https://shreyas-m-246418.github.io/spa-gh/tokens/" > /dev/null; then
+            wget -r -np -nH --cut-dirs=2 -P build/tokens https://shreyas-m-246418.github.io/spa-gh/tokens/
+          fi
+      
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:

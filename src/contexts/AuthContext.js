@@ -21,8 +21,8 @@ export const AuthProvider = ({ children }) => {
     const code = urlParams.get('code');
     
     if (code) {
-      // Use GitHub Actions generated token
-      const tokenEndpoint = `${process.env.REACT_APP_GH_PAGES_URL}/auth/${code}.json`;
+      // Use GitHub Actions generated token file
+      const tokenEndpoint = `${window.location.origin}${window.location.pathname}tokens/${code}.json`;
       fetch(tokenEndpoint)
         .then(response => response.json())
         .then(data => {
@@ -65,9 +65,8 @@ export const AuthProvider = ({ children }) => {
       
       setUser(user);
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('gh_code', code);
+      localStorage.setItem('gh_token', token);
       
-      // Use navigate instead of window.location
       navigate('/jobs');
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -87,7 +86,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    localStorage.removeItem('gh_code');
+    localStorage.removeItem('gh_token');
   };
 
   return (
