@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('gh_token', token);
       
-      navigate('/jobs');
+      window.location.replace('/#/jobs');
     } catch (error) {
       console.error('Error fetching user data:', error);
       navigate('/login');
