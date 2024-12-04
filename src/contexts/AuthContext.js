@@ -17,33 +17,14 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for code in URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
+    // Check for token in URL hash
+    const hash = window.location.hash;
+    const token = hash.match(/access_token=([^&]*)/)?.[1];
     
-    if (code) {
-      // Use GitHub's token endpoint directly
-      const tokenUrl = `https://github.com/login/oauth/access_token?` +
-        `client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&` +
-        `client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}&` +
-        `code=${code}`;
-
-      fetch(tokenUrl, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json'
-        },
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.access_token) {
-          fetchUserData(data.access_token);
-        }
-      })
-      .catch(error => {
-        console.error('Error exchanging code for token:', error);
-        navigate('/login');
-      });
+    if (token) {
+      fetchUserData(token);
+      // Clear the hash
+      window.location.hash = '';
     }
 
     const storedUser = localStorage.getItem('user');
@@ -57,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
-          'Authorization': `token ${token}`,
+          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       });
@@ -86,8 +67,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
-    const redirectUri = `${window.location.origin}${window.location.pathname}`;
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user`;
+    window.location.href = `https://github.com/login/oauth/authorize?` +
+      `client_id=${clientId}&` +
+      `scope=user&` +
+      `response_type=token`;
   };
 
   const logout = () => {
