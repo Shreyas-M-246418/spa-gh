@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -13,6 +14,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check for access token in URL hash
@@ -24,15 +26,14 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Check localStorage for existing user
-  const storedUser = localStorage.getItem('user');
-  if (storedUser) {
-    setUser(JSON.parse(storedUser));
-  }
-  setLoading(false);
-}, []);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, [navigate]);
 
-const fetchUserData = async (token) => {
+  const fetchUserData = async (token) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
@@ -53,11 +54,11 @@ const fetchUserData = async (token) => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('gh_token', token);
       
-      // Use window.location.replace to properly redirect
-      window.location.replace('/#/jobs');
+      window.location.hash = '';
+      navigate('/jobs');
     } catch (error) {
       console.error('Error fetching user data:', error);
-      window.location.replace('/#/login');
+      navigate('/login');
     }
   };
 
