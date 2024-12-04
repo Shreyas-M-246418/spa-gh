@@ -22,8 +22,28 @@ export const AuthProvider = ({ children }) => {
     const code = urlParams.get('code');
     
     if (code) {
-      // Exchange code for token using a proxy server
-      exchangeCodeForToken(code);
+      // Use GitHub's token endpoint directly
+      const tokenUrl = `https://github.com/login/oauth/access_token?` +
+        `client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&` +
+        `client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}&` +
+        `code=${code}`;
+
+      fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.access_token) {
+          fetchUserData(data.access_token);
+        }
+      })
+      .catch(error => {
+        console.error('Error exchanging code for token:', error);
+        navigate('/login');
+      });
     }
 
     const storedUser = localStorage.getItem('user');
@@ -32,32 +52,6 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   }, [navigate]);
-
-  const exchangeCodeForToken = async (code) => {
-    try {
-      // Use a proxy server to exchange the code for a token
-      const response = await fetch(`https://cors-anywhere.herokuapp.com/https://github.com/login/oauth/access_token`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          client_id: process.env.REACT_APP_GITHUB_CLIENT_ID,
-          client_secret: process.env.REACT_APP_GITHUB_CLIENT_SECRET,
-          code: code,
-        })
-      });
-
-      const data = await response.json();
-      if (data.access_token) {
-        await fetchUserData(data.access_token);
-      }
-    } catch (error) {
-      console.error('Error exchanging code for token:', error);
-      navigate('/login');
-    }
-  };
 
   const fetchUserData = async (token) => {
     try {
