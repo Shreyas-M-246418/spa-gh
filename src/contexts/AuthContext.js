@@ -16,37 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code) {
-      // Exchange code for token using Cloudflare Worker
-      fetch(`https://github-oauth-worker.workers.dev?code=${code}`)
-        .then(response => {
-          if (!response.ok) throw new Error('Failed to exchange code');
-          return response.json();
-        })
-        .then(data => {
-          if (data.access_token) {
-            fetchUserData(data.access_token);
-          } else {
-            throw new Error('No access token received');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          navigate('/login');
-        });
-    }
-
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, [navigate, fetchUserData]);
-
   const fetchUserData = async (token) => {
     try {
       const response = await fetch('https://api.github.com/user', {
@@ -77,6 +46,36 @@ export const AuthProvider = ({ children }) => {
       navigate('/login');
     }
   };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      fetch(`https://github-oauth-worker.workers.dev?code=${code}`)
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to exchange code');
+          return response.json();
+        })
+        .then(data => {
+          if (data.access_token) {
+            fetchUserData(data.access_token);
+          } else {
+            throw new Error('No access token received');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          navigate('/login');
+        });
+    }
+
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, [navigate]);
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
