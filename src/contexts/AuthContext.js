@@ -26,28 +26,39 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         headers: {
           'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `token ${process.env.REACT_APP_GITHUB_PAT}`,
+          'Authorization': `token ${process.env.REACT_APP_REPO_TOKEN}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           event_type: 'oauth-code',
           client_payload: { code }
         })
       }).then(() => {
-        // Wait a bit for the workflow to complete
-        setTimeout(() => {
+        // Poll for token file every second for up to 30 seconds
+        let attempts = 0;
+        const checkToken = () => {
           const tokenEndpoint = `${window.location.origin}${window.location.pathname}tokens/${code}.json`;
           fetch(tokenEndpoint)
-            .then(response => response.json())
+            .then(response => {
+              if (!response.ok) throw new Error('Token not ready');
+              return response.json();
+            })
             .then(data => {
               if (data.access_token) {
                 fetchUserData(data.access_token);
               }
             })
             .catch(error => {
-              console.error('Error fetching token:', error);
-              navigate('/login');
+              attempts++;
+              if (attempts < 30) {
+                setTimeout(checkToken, 1000);
+              } else {
+                console.error('Error fetching token:', error);
+                navigate('/login');
+              }
             });
-        }, 5000); // Wait 5 seconds for the workflow to complete
+        };
+        setTimeout(checkToken, 5000); // Initial delay
       });
     }
 
