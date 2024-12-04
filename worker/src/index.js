@@ -19,7 +19,13 @@ addEventListener('fetch', event => {
     const code = url.searchParams.get('code')
   
     if (!code) {
-      return new Response('Missing code parameter', { status: 400 })
+      return new Response('Missing code parameter', { 
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+        }
+      })
     }
   
     try {
@@ -38,6 +44,18 @@ addEventListener('fetch', event => {
   
       const data = await tokenResponse.json()
       
+      console.log('GitHub Response:', data)
+  
+      if (!data.access_token) {
+        return new Response(JSON.stringify({ error: 'No access token in response', details: data }), {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+          },
+        })
+      }
+  
       return new Response(JSON.stringify(data), {
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +63,7 @@ addEventListener('fetch', event => {
         },
       })
     } catch (error) {
-      return new Response(JSON.stringify({ error: 'Failed to exchange code' }), {
+      return new Response(JSON.stringify({ error: 'Failed to exchange code', details: error.message }), {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
