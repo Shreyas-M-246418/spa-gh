@@ -17,26 +17,26 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check for access token in URL hash
     const hash = window.location.hash;
-    if (hash) {
-      const token = hash.split('&')[0].split('=')[1];
+    if (hash.includes('access_token=')) {
+      const token = hash.match(/access_token=([^&]*)/)[1];
       if (token) {
         fetchUserData(token);
       }
     }
 
     // Check localStorage for existing user
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
+  setLoading(false);
+}, []);
 
-  const fetchUserData = async (token) => {
+const fetchUserData = async (token) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
-          Authorization: `token ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
       const userData = await response.json();
@@ -53,18 +53,18 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('gh_token', token);
       
-      // Clean up URL and redirect to jobs page
-      window.location.hash = '/jobs';
+      // Use window.location.replace to properly redirect
+      window.location.replace('/#/jobs');
     } catch (error) {
       console.error('Error fetching user data:', error);
-      // Redirect to login page if there's an error
-      window.location.hash = '/login';
+      window.location.replace('/#/login');
     }
   };
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=user&response_type=token`;
+    const redirectUri = window.location.origin + window.location.pathname;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user&response_type=token`;
   };
 
   const logout = () => {
