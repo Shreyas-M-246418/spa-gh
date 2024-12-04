@@ -1,0 +1,99 @@
+.display-jobs-page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .filters-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .filter-input,
+  .filter-select {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    min-width: 200px;
+    flex: 1;
+  }
+  
+  .jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .job-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .job-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .job-card-header {
+    margin-bottom: 1rem;
+  }
+  
+  .job-card-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+  }
+  
+  .company-name {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .job-card-body {
+    margin-bottom: 1rem;
+  }
+  
+  .location,
+  .employment-type {
+    color: #555;
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+  }
+  
+  .job-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+  
+  .work-type {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
+  
+  .posted-date {
+    color: #888;
+    font-size: 0.8rem;
+  }
+  
+  @media (max-width: 768px) {
+    .display-jobs-page {
+      padding: 1rem;
+    }
+  
+    .filter-input,
+    .filter-select {
+      min-width: 100%;
+    }
+  }
