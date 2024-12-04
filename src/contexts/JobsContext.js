@@ -1,41 +1,47 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+const JobsContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
+export const useJobs = () => {
+  const context = useContext(JobsContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useJobs must be used within a JobsProvider');
   }
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+export const JobsProvider = ({ children }) => {
+  const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    // Check if user data exists in localStorage
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    // Load jobs from localStorage or use initial data
+    const storedJobs = localStorage.getItem('jobs');
+    if (storedJobs) {
+      setJobs(JSON.parse(storedJobs));
     }
-    setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const addJob = (newJob) => {
+    const jobToAdd = {
+      ...newJob,
+      id: Date.now(),
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedJobs = [...jobs, jobToAdd];
+    setJobs(updatedJobs);
+    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
+    return jobToAdd;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const value = {
+    jobs,
+    addJob,
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <JobsContext.Provider value={value}>
       {children}
-    </AuthContext.Provider>
+    </JobsContext.Provider>
   );
 };
