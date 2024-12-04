@@ -21,19 +21,34 @@ export const AuthProvider = ({ children }) => {
     const code = urlParams.get('code');
     
     if (code) {
-      // Use GitHub Actions generated token file
-      const tokenEndpoint = `${window.location.origin}${window.location.pathname}tokens/${code}.json`;
-      fetch(tokenEndpoint)
-        .then(response => response.json())
-        .then(data => {
-          if (data.access_token) {
-            fetchUserData(data.access_token);
-          }
+      // Trigger token generation workflow
+      fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/dispatches', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': `token ${process.env.REACT_APP_GITHUB_PAT}`,
+        },
+        body: JSON.stringify({
+          event_type: 'oauth-code',
+          client_payload: { code }
         })
-        .catch(error => {
-          console.error('Error fetching token:', error);
-          navigate('/login');
-        });
+      }).then(() => {
+        // Wait a bit for the workflow to complete
+        setTimeout(() => {
+          const tokenEndpoint = `${window.location.origin}${window.location.pathname}tokens/${code}.json`;
+          fetch(tokenEndpoint)
+            .then(response => response.json())
+            .then(data => {
+              if (data.access_token) {
+                fetchUserData(data.access_token);
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching token:', error);
+              navigate('/login');
+            });
+        }, 5000); // Wait 5 seconds for the workflow to complete
+      });
     }
 
     const storedUser = localStorage.getItem('user');
