@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     
     if (code) {
       // Exchange code for token using Cloudflare Worker
-      fetch(`https://github-oauth-worker.shreyas-m246418.workers.dev?code=${code}`)
+      fetch(`https://github-oauth-worker.workers.dev?code=${code}`)
         .then(response => {
           if (!response.ok) throw new Error('Failed to exchange code');
           return response.json();
