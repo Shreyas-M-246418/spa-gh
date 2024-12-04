@@ -53,10 +53,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('gh_token', token);
       
-      // Clean up URL
-      window.location.hash = '';
+      // Clean up URL and redirect to jobs page
+      window.location.hash = '/jobs';
     } catch (error) {
       console.error('Error fetching user data:', error);
+      // Redirect to login page if there's an error
+      window.location.hash = '/login';
     }
   };
 
