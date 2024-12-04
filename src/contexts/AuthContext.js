@@ -18,8 +18,8 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for token in URL hash
-    const hash = window.location.hash;
-    const token = hash.split('&')[0].split('=')[1];
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    const token = params.get('access_token');
     
     if (token) {
       fetchUserData(token);
@@ -36,11 +36,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
-          Authorization: `token ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
       });
-      const userData = await response.json();
       
+      if (!response.ok) throw new Error('Failed to fetch user data');
+      
+      const userData = await response.json();
       const user = {
         id: userData.id,
         name: userData.name,
@@ -53,7 +56,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('gh_token', token);
       
-      // Clear hash and navigate
+      // Clean up URL and redirect
       window.location.replace('/#/jobs');
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -63,7 +66,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=user&response_type=token`;
+    const redirectUri = `${window.location.origin}${window.location.pathname}`;
+    const scope = 'user';
+    
+    window.location.href = `https://github.com/login/oauth/authorize?` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${redirectUri}&` +
+      `scope=${scope}&` +
+      `response_type=token`;
   };
 
   const logout = () => {
