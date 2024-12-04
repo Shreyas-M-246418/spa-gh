@@ -79,10 +79,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/spa-gh/#/callback`;
     window.location.href = `https://github.com/login/oauth/authorize?` +
       `client_id=${clientId}&` +
-      `redirect_uri=${redirectUri}&` +
+      `redirect_uri=${window.location.origin}/spa-gh/#/callback&` +
       `scope=user`;
   };
 
