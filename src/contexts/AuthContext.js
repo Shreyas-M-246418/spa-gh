@@ -17,12 +17,13 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for token in URL hash
-    const params = new URLSearchParams(window.location.hash.substring(1));
-    const token = params.get('access_token');
+    // Check for code in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
     
-    if (token) {
-      fetchUserData(token);
+    if (code) {
+      // Exchange code for token using a proxy server
+      exchangeCodeForToken(code);
     }
 
     const storedUser = localStorage.getItem('user');
@@ -32,11 +33,37 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, [navigate]);
 
+  const exchangeCodeForToken = async (code) => {
+    try {
+      // Use a proxy server to exchange the code for a token
+      const response = await fetch(`https://cors-anywhere.herokuapp.com/https://github.com/login/oauth/access_token`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: process.env.REACT_APP_GITHUB_CLIENT_ID,
+          client_secret: process.env.REACT_APP_GITHUB_CLIENT_SECRET,
+          code: code,
+        })
+      });
+
+      const data = await response.json();
+      if (data.access_token) {
+        await fetchUserData(data.access_token);
+      }
+    } catch (error) {
+      console.error('Error exchanging code for token:', error);
+      navigate('/login');
+    }
+  };
+
   const fetchUserData = async (token) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `token ${token}`,
           'Accept': 'application/json'
         }
       });
@@ -56,8 +83,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('gh_token', token);
       
-      // Clean up URL and redirect
-      window.location.replace('/#/jobs');
+      navigate('/jobs');
     } catch (error) {
       console.error('Error fetching user data:', error);
       navigate('/login');
@@ -67,13 +93,7 @@ export const AuthProvider = ({ children }) => {
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
     const redirectUri = `${window.location.origin}${window.location.pathname}`;
-    const scope = 'user';
-    
-    window.location.href = `https://github.com/login/oauth/authorize?` +
-      `client_id=${clientId}&` +
-      `redirect_uri=${redirectUri}&` +
-      `scope=${scope}&` +
-      `response_type=token`;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user`;
   };
 
   const logout = () => {
