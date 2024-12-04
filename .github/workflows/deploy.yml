@@ -17,6 +17,7 @@ jobs:
       - name: Build
         env:
           REACT_APP_GITHUB_CLIENT_ID: ${{ secrets.REACT_APP_GITHUB_CLIENT_ID }}
+          REACT_APP_GITHUB_CLIENT_SECRET: ${{ secrets.REACT_APP_GITHUB_CLIENT_SECRET }}
         run: npm run build
       
       - name: Deploy
