@@ -2,7 +2,7 @@ addEventListener('fetch', event => {
     event.respondWith(handleRequest(event.request))
   })
   
-  const ALLOWED_ORIGIN = 'https://shreyas-m-246418.github.io/spa-gh'
+  const ALLOWED_ORIGIN = 'https://shreyas-m-246418.github.io'
   
   async function handleRequest(request) {
     if (request.method === 'OPTIONS') {
