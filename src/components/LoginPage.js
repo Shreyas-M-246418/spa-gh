@@ -8,17 +8,7 @@ const LoginPage = () => {
   const { login } = useAuth();
 
   const handleGitHubLogin = () => {
-    // Simulate GitHub login with mock data
-    const mockUser = {
-      id: `user_${Date.now()}`,
-      name: 'Demo User',
-      username: 'demouser',
-      email: 'demo@example.com',
-      avatar: 'https://github.com/github.png'
-    };
-    
-    login(mockUser);
-    navigate('/jobs');
+    login(); // This will redirect to GitHub
   };
 
   return (
