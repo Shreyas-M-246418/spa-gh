@@ -28,13 +28,8 @@ addEventListener('fetch', event => {
       })
     }
   
-    console.log('Environment variables:', {
-      clientId: GITHUB_CLIENT_ID ? 'Set' : 'Not set',
-      clientSecret: GITHUB_CLIENT_SECRET ? 'Set' : 'Not set'
-    })
-  
     try {
-      const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+      const response = await fetch('https://github.com/login/oauth/access_token', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -44,19 +39,15 @@ addEventListener('fetch', event => {
           client_id: GITHUB_CLIENT_ID,
           client_secret: GITHUB_CLIENT_SECRET,
           code: code,
+          redirect_uri: 'https://shreyas-m-246418.github.io/spa-gh'
         }),
       })
   
-      const data = await tokenResponse.json()
+      const data = await response.json()
       
-      console.log('GitHub Response:', {
-        status: tokenResponse.status,
-        data: data
-      })
-  
-      if (!data.access_token) {
+      if (data.error) {
         return new Response(JSON.stringify({ 
-          error: 'No access token in response', 
+          error: 'GitHub OAuth error',
           details: data,
           debug: {
             clientIdPresent: !!GITHUB_CLIENT_ID,
@@ -67,7 +58,7 @@ addEventListener('fetch', event => {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-          },
+          }
         })
       }
   
@@ -75,12 +66,12 @@ addEventListener('fetch', event => {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-        },
+        }
       })
     } catch (error) {
       return new Response(JSON.stringify({ 
-        error: 'Failed to exchange code', 
-        details: error.message,
+        error: 'Failed to exchange code',
+        message: error.message,
         debug: {
           clientIdPresent: !!GITHUB_CLIENT_ID,
           clientSecretPresent: !!GITHUB_CLIENT_SECRET
@@ -90,7 +81,7 @@ addEventListener('fetch', event => {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-        },
+        }
       })
     }
   }
