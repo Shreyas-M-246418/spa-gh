@@ -17,13 +17,23 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for code in URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     
     if (code) {
-      // Instead of exchanging code, use it to fetch user data directly
-      fetchUserDataWithCode(code);
+      // Use GitHub Actions generated token
+      const tokenEndpoint = `${process.env.REACT_APP_GH_PAGES_URL}/auth/${code}.json`;
+      fetch(tokenEndpoint)
+        .then(response => response.json())
+        .then(data => {
+          if (data.access_token) {
+            fetchUserData(data.access_token);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching token:', error);
+          navigate('/login');
+        });
     }
 
     const storedUser = localStorage.getItem('user');
@@ -33,11 +43,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, [navigate]);
 
-  const fetchUserDataWithCode = async (code) => {
+  const fetchUserData = async (token) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
-          'Authorization': `Basic ${btoa(`${code}:x-oauth-basic`)}`,
+          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       });
