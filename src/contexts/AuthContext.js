@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchUserData = async (token) => {
+  const fetchUserData = useCallback(async (token) => {
     try {
       const response = await fetch('https://api.github.com/user', {
         headers: {
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Error fetching user data:', error);
       navigate('/login');
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
-  }, [navigate]);
+  }, [navigate, fetchUserData]);
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
