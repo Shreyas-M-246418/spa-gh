@@ -19,7 +19,7 @@ addEventListener('fetch', event => {
     const code = url.searchParams.get('code')
   
     if (!code) {
-      return new Response('Missing code parameter', { 
+      return new Response(JSON.stringify({ error: 'Missing code parameter' }), { 
         status: 400,
         headers: {
           'Content-Type': 'application/json',
@@ -27,6 +27,11 @@ addEventListener('fetch', event => {
         }
       })
     }
+  
+    console.log('Environment variables:', {
+      clientId: GITHUB_CLIENT_ID ? 'Set' : 'Not set',
+      clientSecret: GITHUB_CLIENT_SECRET ? 'Set' : 'Not set'
+    })
   
     try {
       const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
@@ -44,10 +49,20 @@ addEventListener('fetch', event => {
   
       const data = await tokenResponse.json()
       
-      console.log('GitHub Response:', data)
+      console.log('GitHub Response:', {
+        status: tokenResponse.status,
+        data: data
+      })
   
       if (!data.access_token) {
-        return new Response(JSON.stringify({ error: 'No access token in response', details: data }), {
+        return new Response(JSON.stringify({ 
+          error: 'No access token in response', 
+          details: data,
+          debug: {
+            clientIdPresent: !!GITHUB_CLIENT_ID,
+            clientSecretPresent: !!GITHUB_CLIENT_SECRET
+          }
+        }), {
           status: 400,
           headers: {
             'Content-Type': 'application/json',
@@ -63,7 +78,14 @@ addEventListener('fetch', event => {
         },
       })
     } catch (error) {
-      return new Response(JSON.stringify({ error: 'Failed to exchange code', details: error.message }), {
+      return new Response(JSON.stringify({ 
+        error: 'Failed to exchange code', 
+        details: error.message,
+        debug: {
+          clientIdPresent: !!GITHUB_CLIENT_ID,
+          clientSecretPresent: !!GITHUB_CLIENT_SECRET
+        }
+      }), {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
