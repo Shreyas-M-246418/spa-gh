@@ -21,45 +21,23 @@ export const AuthProvider = ({ children }) => {
     const code = urlParams.get('code');
     
     if (code) {
-      // Trigger token generation workflow
-      fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/dispatches', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `token ${process.env.REACT_APP_REPO_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          event_type: 'oauth-code',
-          client_payload: { code }
+      // Exchange code for token using Cloudflare Worker
+      fetch(`https://github-oauth-worker.shreyas-m246418.workers.dev?code=${code}`)
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to exchange code');
+          return response.json();
         })
-      }).then(() => {
-        // Poll for token file every second for up to 30 seconds
-        let attempts = 0;
-        const checkToken = () => {
-          const tokenEndpoint = `${window.location.origin}${window.location.pathname}tokens/${code}.json`;
-          fetch(tokenEndpoint)
-            .then(response => {
-              if (!response.ok) throw new Error('Token not ready');
-              return response.json();
-            })
-            .then(data => {
-              if (data.access_token) {
-                fetchUserData(data.access_token);
-              }
-            })
-            .catch(error => {
-              attempts++;
-              if (attempts < 30) {
-                setTimeout(checkToken, 1000);
-              } else {
-                console.error('Error fetching token:', error);
-                navigate('/login');
-              }
-            });
-        };
-        setTimeout(checkToken, 5000); // Initial delay
-      });
+        .then(data => {
+          if (data.access_token) {
+            fetchUserData(data.access_token);
+          } else {
+            throw new Error('No access token received');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          navigate('/login');
+        });
     }
 
     const storedUser = localStorage.getItem('user');
