@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
-  }, [navigate]);
+  }, [navigate, fetchUserData]);
 
   const fetchUserData = async (token) => {
     try {
