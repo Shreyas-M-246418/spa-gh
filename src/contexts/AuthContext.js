@@ -48,23 +48,23 @@ export const AuthProvider = ({ children }) => {
   }, [navigate]);
 
   useEffect(() => {
-    // Check URL parameters first
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlCode = urlParams.get('code');
-    
-    // Check hash parameters if no URL code
-    const hashParams = new URLSearchParams(window.location.hash.replace('#/', ''));
-    const hashCode = hashParams.get('code');
-    
-    const code = urlCode || hashCode;
+    // Get the full URL and parse it
+    const fullUrl = window.location.href;
+    const codeMatch = fullUrl.match(/[?&]code=([^&]+)/);
+    const code = codeMatch ? codeMatch[1] : null;
     
     if (code) {
+      console.log('Found code:', code);
       fetch(`https://github-oauth-worker.shreyas-m246418.workers.dev?code=${code}`)
         .then(response => {
-          if (!response.ok) throw new Error('Failed to exchange code');
+          if (!response.ok) {
+            console.error('Response not OK:', response.status);
+            throw new Error('Failed to exchange code');
+          }
           return response.json();
         })
         .then(data => {
+          console.log('Received data:', data);
           if (data.access_token) {
             fetchUserData(data.access_token);
           } else {

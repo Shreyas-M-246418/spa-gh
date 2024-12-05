@@ -40,16 +40,19 @@ addEventListener('fetch', event => {
           body: JSON.stringify({
             client_id: GITHUB_CLIENT_ID,
             client_secret: GITHUB_CLIENT_SECRET,
-            code: code,
-            redirect_uri: 'https://shreyas-m-246418.github.io/spa-gh/#/callback'
+            code: code
           }),
         })
   
       const data = await response.json()
+      console.log('GitHub response:', data)
       
       if (data.error) {
         console.error('GitHub OAuth error:', data)
-        return new Response(JSON.stringify(data), {
+        return new Response(JSON.stringify({
+          error: 'GitHub OAuth error',
+          details: data
+        }), {
           status: 400,
           headers: {
             ...corsHeaders,
