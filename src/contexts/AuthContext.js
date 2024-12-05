@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
   }, [navigate]);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
+    const hashParams = new URLSearchParams(window.location.hash.replace('#/', ''));
+    const code = hashParams.get('code');
     
     if (code) {
       fetch(`https://github-oauth-worker.shreyas-m246418.workers.dev?code=${code}`)
@@ -79,9 +79,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = () => {
     const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
+    const redirectUri = encodeURIComponent(`${window.location.origin}/spa-gh/#/callback`);
     window.location.href = `https://github.com/login/oauth/authorize?` +
       `client_id=${clientId}&` +
-      `redirect_uri=${window.location.origin}/spa-gh/#/callback&` +
+      `redirect_uri=${redirectUri}&` +
       `scope=user`;
   };
 
