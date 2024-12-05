@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signInWithPopup, signOut } from 'firebase/auth';
+import { auth, githubProvider } from '../firebase/config';
 
 const AuthContext = createContext();
 
@@ -16,87 +18,41 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchUserData = useCallback(async (token) => {
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName,
+          email: firebaseUser.email,
+          avatar: firebaseUser.photoURL,
+          username: firebaseUser.reloadUserInfo.screenName
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const login = async () => {
     try {
-      const response = await fetch('https://api.github.com/user', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) throw new Error('Failed to fetch user data');
-      
-      const userData = await response.json();
-      const user = {
-        id: userData.id,
-        name: userData.name,
-        username: userData.login,
-        avatar: userData.avatar_url,
-        email: userData.email
-      };
-      
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('gh_token', token);
-      
+      await signInWithPopup(auth, githubProvider);
       navigate('/jobs');
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      navigate('/login');
+      console.error('Login error:', error);
     }
-  }, [navigate]);
-
-  useEffect(() => {
-    // Get the full URL and parse it
-    const fullUrl = window.location.href;
-    const codeMatch = fullUrl.match(/[?&]code=([^&#]+)/);
-    const code = codeMatch ? codeMatch[1] : null;
-    
-    if (code) {
-      //console.log('Found code (clean):', code);
-      fetch(`https://github-oauth-worker.shreyas-m246418.workers.dev?code=${code}`)
-        .then(response => {
-          if (!response.ok) {
-            console.error('Response not OK:', response.status);
-            throw new Error('Failed to exchange code');
-          }
-          return response.json();
-        })
-        .then(data => {
-          //console.log('Received data:', data);
-          if (data.access_token) {
-            fetchUserData(data.access_token);
-            // Clear the code from URL after successful exchange
-            window.history.replaceState({}, document.title, '/spa-gh/#/callback');
-          } else {
-            throw new Error('No access token received');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          navigate('/login');
-        });
-    }
-
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, [navigate, fetchUserData]);
-
-  const login = () => {
-    const clientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
-    const redirectUri = encodeURIComponent(`${window.location.origin}/spa-gh/#/callback`);
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user`;
-    window.location.href = authUrl;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('gh_token');
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (

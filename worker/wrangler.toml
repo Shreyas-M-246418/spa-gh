@@ -1,8 +1,0 @@
-name = "github-oauth-worker"
-main = "src/index.js"
-compatibility_date = "2024-01-01"
-
-[vars]
-# These will be set in the Cloudflare Dashboard
-GITHUB_CLIENT_ID = ""
-GITHUB_CLIENT_SECRET = ""

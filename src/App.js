@@ -7,7 +7,6 @@ import DisplayJobsPage from './components/DisplayJobsPage';
 import JobsPage from './components/JobsPage';
 import HirePage from './components/HirePage';
 import LoginPage from './components/LoginPage';
-import AuthCallback from './components/AuthCallback';
 
 function App() {
   return (
@@ -21,7 +20,6 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/jobs" element={<JobsPage />} />
               <Route path="/hire" element={<HirePage />} />
-              <Route path="/callback" element={<AuthCallback />} />
             </Routes>
           </div>
         </JobsProvider>
