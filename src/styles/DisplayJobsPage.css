@@ -2,28 +2,32 @@
   --full-time-color: #4CAF50;
   --internship-color: #9C27B0;
   --part-time-color: #2196F3;
+  --navbar-height: 64px;
+  --filters-height: 80px;
 }
 
 .page-container {
   background-color: #f8f9fa;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - var(--navbar-height));
   width: 100%;
-  margin-top: 64px;
+  margin-top: calc(var(--navbar-height) + var(--filters-height));
   display: flex;
   flex-direction: column;
 }
 
 .search-filters {
   backdrop-filter: blur(8px);
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid rgba(0,0,0,0.1);
   padding: 1rem 2rem;
   width: 100%;
   position: fixed;
-  top: 64px;
+  top: var(--navbar-height);
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 999;
+  height: var(--filters-height);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .search-bar {
@@ -81,13 +85,12 @@
 
 .main-content {
   display: flex;
-  padding-top: 120px;
   gap: 2rem;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
   position: relative;
-  padding: 140px 2rem 2rem 290px;
+  padding: 2rem 2rem 2rem 290px;
 }
 
 .filters-sidebar {
@@ -96,9 +99,9 @@
   padding: 2rem;
   border-radius: 8px;
   position: fixed;
-  top: 120px;
+  top: calc(var(--navbar-height) + var(--filters-height) + 20px);
   left: 20px;
-  height: calc(100vh - 140px);
+  height: calc(100vh - var(--navbar-height) - var(--filters-height) - 40px);
   overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0,0,0,0.1);
 }
@@ -279,7 +282,7 @@
 
 @media (max-width: 1024px) {
   .main-content {
-    padding-left: 2rem;
+    padding: 2rem;
   }
 
   .filters-sidebar {
@@ -288,6 +291,14 @@
 }
 
 @media (max-width: 768px) {
+  :root {
+    --filters-height: 220px;
+  }
+
+  .search-filters {
+    height: auto;
+  }
+
   .search-bar {
     flex-direction: column;
     padding: 0;
