@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     const code = codeMatch ? codeMatch[1] : null;
     
     if (code) {
-      console.log('Found code (clean):', code);
+      //console.log('Found code (clean):', code);
       fetch(`https://github-oauth-worker.shreyas-m246418.workers.dev?code=${code}`)
         .then(response => {
           if (!response.ok) {
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
           return response.json();
         })
         .then(data => {
-          console.log('Received data:', data);
+          //console.log('Received data:', data);
           if (data.access_token) {
             fetchUserData(data.access_token);
             // Clear the code from URL after successful exchange
