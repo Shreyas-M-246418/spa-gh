@@ -50,11 +50,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Get the full URL and parse it
     const fullUrl = window.location.href;
-    const codeMatch = fullUrl.match(/[?&]code=([^&]+)/);
+    const codeMatch = fullUrl.match(/[?&]code=([^&#]+)/);
     const code = codeMatch ? codeMatch[1] : null;
     
     if (code) {
-      console.log('Found code:', code);
+      console.log('Found code (clean):', code);
       fetch(`https://github-oauth-worker.shreyas-m246418.workers.dev?code=${code}`)
         .then(response => {
           if (!response.ok) {
@@ -67,6 +67,8 @@ export const AuthProvider = ({ children }) => {
           console.log('Received data:', data);
           if (data.access_token) {
             fetchUserData(data.access_token);
+            // Clear the code from URL after successful exchange
+            window.history.replaceState({}, document.title, '/spa-gh/#/callback');
           } else {
             throw new Error('No access token received');
           }
