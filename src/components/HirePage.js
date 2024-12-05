@@ -5,6 +5,7 @@ import { useJobs } from '../contexts/JobsContext';
 import '../styles/HirePage.css';
 
 const HirePage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: '',
     location: '',
@@ -18,9 +19,6 @@ const HirePage = () => {
     applyLink: '',
   });
 
-  const { user } = useAuth();
-  const { addJob } = useJobs();
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,33 +28,30 @@ const HirePage = () => {
     }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      const jobData = {
-        ...formData,
-        userId: user.id,
-        createdBy: user.name || user.email,
-        createdAt: new Date().toISOString(),
-      };
-
-      await addJob(jobData);
-      navigate('/jobs');
-    } catch (error) {
-      console.error('Error creating job:', error);
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // In a real app, this would send to a server
+    // For GitHub Pages demo, we could store in localStorage
+    const jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+    const newJob = {
+      ...formData,
+      id: Date.now(),
+      createdAt: new Date().toISOString(),
+    };
+    jobs.push(newJob);
+    localStorage.setItem('jobs', JSON.stringify(jobs));
+    navigate('/jobs');
   };
 
   return (
     <div className="hire-page">
       <div className="hire-card">
         <div className="hire-card-header">
-          <h2>Create New Job</h2>
-          <button className="close-button" onClick={() => navigate('/jobs')}>
-            ×
-          </button>
+          <h2>Post a New Job</h2>
+          <button className="close-button" onClick={() => navigate('/jobs')}>×</button>
         </div>
         
-        <div className="hire-card-content">
+        <form onSubmit={handleSubmit} className="hire-card-content">
           <div className="form-grid">
             {/* Left Column */}
             <div className="form-column">
@@ -67,6 +62,7 @@ const HirePage = () => {
                   value={formData.companyName}
                   onChange={handleChange}
                   placeholder="Company Name"
+                  required
                   className="form-input"
                 />
               </div>
@@ -78,6 +74,7 @@ const HirePage = () => {
                   value={formData.location}
                   onChange={handleChange}
                   placeholder="Location"
+                  required
                   className="form-input"
                 />
               </div>
@@ -87,9 +84,10 @@ const HirePage = () => {
                   name="domain"
                   value={formData.domain}
                   onChange={handleChange}
+                  required
                   className="form-select"
                 >
-                  <option value="">Domain</option>
+                  <option value="">Select Domain</option>
                   <option value="Frontend">Frontend</option>
                   <option value="Backend">Backend</option>
                   <option value="Full Stack">Full Stack</option>
@@ -104,6 +102,7 @@ const HirePage = () => {
                   name="workType"
                   value={formData.workType}
                   onChange={handleChange}
+                  required
                   className="form-select"
                 >
                   <option value="">Work Type</option>
@@ -118,6 +117,7 @@ const HirePage = () => {
                   name="employmentType"
                   value={formData.employmentType}
                   onChange={handleChange}
+                  required
                   className="form-select"
                 >
                   <option value="">Employment Type</option>
@@ -128,14 +128,18 @@ const HirePage = () => {
               </div>
 
               <div className="form-group">
-                <input
-                  type="text"
-                  name="applyLink"
-                  value={formData.applyLink}
+                <select
+                  name="userType"
+                  value={formData.userType}
                   onChange={handleChange}
-                  placeholder="Application Link"
-                  className="form-input"
-                />
+                  required
+                  className="form-select"
+                >
+                  <option value="">User Type</option>
+                  <option value="student">Student</option>
+                  <option value="fresher">Fresher</option>
+                  <option value="professional">Professional</option>
+                </select>
               </div>
             </div>
 
@@ -148,6 +152,7 @@ const HirePage = () => {
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="Job Title"
+                  required
                   className="form-input"
                 />
               </div>
@@ -158,6 +163,7 @@ const HirePage = () => {
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Job Description"
+                  required
                   className="form-textarea"
                 />
               </div>
@@ -174,13 +180,23 @@ const HirePage = () => {
               </div>
 
               <div className="form-group">
-                <button onClick={handleSubmit} className="create-button">
-                  Create Job
-                </button>
+                <input
+                  type="url"
+                  name="applyLink"
+                  value={formData.applyLink}
+                  onChange={handleChange}
+                  placeholder="Application URL"
+                  required
+                  className="form-input"
+                />
               </div>
+
+              <button type="submit" className="create-button">
+                Post Job
+              </button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

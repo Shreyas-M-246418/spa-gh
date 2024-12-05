@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useJobs } from '../contexts/JobsContext';
@@ -7,67 +7,46 @@ import JobDetails from './JobDetails';
 import '../styles/JobsPage.css';
 
 const JobsPage = () => {
-  const { user } = useAuth();
-  const { jobs } = useJobs();
   const navigate = useNavigate();
+  const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [filters, setFilters] = useState({
     title: '',
     location: '',
-    domain: [],
-    employmentType: [],
-    workType: []
+    employmentType: []
   });
 
-  // Filter jobs to show only those created by the current user
-  const userJobs = jobs.filter(job => job.userId === user.id);
+  useEffect(() => {
+    // Load jobs from localStorage for GitHub Pages demo
+    const savedJobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+    setJobs(savedJobs);
+  }, []);
 
   const handleFilterChange = (e, field) => {
-    setFilters({
-      ...filters,
+    setFilters(prev => ({
+      ...prev,
       [field]: e.target.value
-    });
-  };
-
-  const handleDomainChange = (e) => {
-    const value = e.target.value;
-    setFilters(prev => ({
-      ...prev,
-      domain: e.target.checked 
-        ? [...prev.domain, value]
-        : prev.domain.filter(item => item !== value)
     }));
   };
 
-  const handleEmploymentTypeChange = (e) => {
-    const value = e.target.value;
+  const handleEmploymentTypeChange = (type) => {
     setFilters(prev => ({
       ...prev,
-      employmentType: e.target.checked 
-        ? [...prev.employmentType, value]
-        : prev.employmentType.filter(item => item !== value)
+      employmentType: prev.employmentType.includes(type)
+        ? prev.employmentType.filter(t => t !== type)
+        : [...prev.employmentType, type]
     }));
   };
 
-  const handleWorkTypeChange = (e) => {
-    const value = e.target.value;
-    setFilters(prev => ({
-      ...prev,
-      workType: e.target.checked 
-        ? [...prev.workType, value]
-        : prev.workType.filter(item => item !== value)
-    }));
-  };
+  const filteredJobs = jobs.filter(job => {
+    const titleMatch = job.title.toLowerCase().includes(filters.title.toLowerCase()) ||
+      job.companyName.toLowerCase().includes(filters.title.toLowerCase());
+    const locationMatch = job.location.toLowerCase().includes(filters.location.toLowerCase());
+    const typeMatch = filters.employmentType.length === 0 || 
+      filters.employmentType.includes(job.employmentType);
 
-  const clearFilters = () => {
-    setFilters({
-      title: '',
-      location: '',
-      domain: [],
-      employmentType: [],
-      workType: []
-    });
-  };
+    return titleMatch && locationMatch && typeMatch;
+  });
 
   return (
     <div className="dashboard-container">
@@ -87,9 +66,6 @@ const JobsPage = () => {
             onChange={(e) => handleFilterChange(e, 'location')}
             className="search-input"
           />
-          <button onClick={clearFilters} className="clear-all-btn">
-            Clear all
-          </button>
         </div>
       </div>
 
@@ -97,31 +73,15 @@ const JobsPage = () => {
         <div className="filters-sidebar">
           <div className="filter-section">
             <h3>Employment Type</h3>
-            {['Full time', 'Internship', 'Part time'].map(type => (
-              <label key={type} className="employment-type-label">
+            {['Full time', 'Part time', 'Internship'].map(type => (
+              <label key={type} className="checkbox-label">
                 <input
                   type="checkbox"
-                  value={type.toLowerCase()}
                   checked={filters.employmentType.includes(type.toLowerCase())}
-                  onChange={handleEmploymentTypeChange}
-                  className="employment-type-checkbox"
+                  onChange={() => handleEmploymentTypeChange(type.toLowerCase())}
+                  className="checkbox-input"
                 />
-                {type}
-              </label>
-            ))}
-          </div>
-
-          <div className="filter-section">
-            <h3>Work Type</h3>
-            {['Remote', 'On site', 'Hybrid'].map(type => (
-              <label key={type}>
-                <input
-                  type="checkbox"
-                  value={type.toLowerCase()}
-                  checked={filters.workType.includes(type.toLowerCase())}
-                  onChange={handleWorkTypeChange}
-                />
-                {type}
+                <span className="checkbox-text">{type}</span>
               </label>
             ))}
           </div>
@@ -129,47 +89,37 @@ const JobsPage = () => {
 
         <div className="jobs-content">
           <div className="jobs-header">
-            <h1>My Job Listings</h1>
-            <button 
-              className="create-job-button"
-              onClick={() => navigate('/hire')}
-            >
-              <Plus size={20} />
-              Create New Job
-            </button>
+            <h2>My Posted Jobs</h2>
+            <div className="header-buttons">
+              <button onClick={() => navigate('/hire')} className="post-job-btn">
+                <Plus size={20} />
+                Post New Job
+              </button>
+            </div>
           </div>
 
           <div className="jobs-grid">
-            {userJobs.map(job => (
-              <div
-                key={job.id}
+            {filteredJobs.map(job => (
+              <div 
+                key={job.id} 
                 className="job-card"
                 onClick={() => setSelectedJob(job)}
               >
-                <div className="employment-type-badge" data-type={job.employmentType?.toLowerCase()}>
-                  {job.employmentType}
+                <div className="job-card-header">
+                  <h3>{job.title}</h3>
+                  <span className="employment-type-badge" data-type={job.employmentType}>
+                    {job.employmentType}
+                  </span>
                 </div>
-                <h3>{job.title}</h3>
                 <p className="company-name">{job.companyName}</p>
-                <div className="job-meta">
+                <p className="job-description">{job.description.substring(0, 150)}...</p>
+                <div className="job-location">
                   <span>{job.location}</span>
-                  <span>{job.domain}</span>
+                  <span>{job.workType}</span>
                 </div>
               </div>
             ))}
           </div>
-
-          {userJobs.length === 0 && (
-            <div className="no-jobs">
-              <p>You haven't created any job listings yet.</p>
-              <button 
-                className="create-first-job"
-                onClick={() => navigate('/hire')}
-              >
-                Create Your First Job
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -179,6 +129,13 @@ const JobsPage = () => {
           onClose={() => setSelectedJob(null)}
         />
       )}
+
+      <button 
+        className="floating-add-button"
+        onClick={() => navigate('/hire')}
+      >
+        <Plus size={24} />
+      </button>
     </div>
   );
 };
