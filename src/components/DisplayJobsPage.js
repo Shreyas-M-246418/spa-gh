@@ -6,11 +6,13 @@ import '../styles/DisplayJobsPage.css';
 const DisplayJobsPage = () => {
   const { jobs } = useJobs();
   const [selectedJob, setSelectedJob] = useState(null);
+  const [showFullScreen, setShowFullScreen] = useState(false);
   const [filters, setFilters] = useState({
-    search: '',
+    title: '',
     location: '',
-    employmentType: '',
-    workType: ''
+    domain: [],
+    employmentType: [],
+    workType: []
   });
 
   const handleFilterChange = (e) => {
@@ -21,12 +23,29 @@ const DisplayJobsPage = () => {
     }));
   };
 
+  const handleJobClick = (job) => {
+    setSelectedJob(job);
+    setShowFullScreen(true);
+  };
+
+  const handleCloseFullScreen = () => {
+    setSelectedJob(null);
+    setShowFullScreen(false);
+  };
+
   const filteredJobs = jobs.filter(job => {
-    const searchMatch = job.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-                       job.companyName.toLowerCase().includes(filters.search.toLowerCase());
-    const locationMatch = !filters.location || job.location.toLowerCase().includes(filters.location.toLowerCase());
-    const employmentTypeMatch = !filters.employmentType || job.employmentType === filters.employmentType;
-    const workTypeMatch = !filters.workType || job.workType === filters.workType;
+    const searchMatch = !filters.title || 
+      job.title.toLowerCase().includes(filters.title.toLowerCase()) ||
+      job.companyName?.toLowerCase().includes(filters.title.toLowerCase());
+    
+    const locationMatch = !filters.location || 
+      job.location.toLowerCase().includes(filters.location.toLowerCase());
+    
+    const employmentTypeMatch = filters.employmentType.length === 0 || 
+      filters.employmentType.includes(job.employmentType);
+    
+    const workTypeMatch = filters.workType.length === 0 || 
+      filters.workType.includes(job.workType);
 
     return searchMatch && locationMatch && employmentTypeMatch && workTypeMatch;
   });
@@ -36,9 +55,9 @@ const DisplayJobsPage = () => {
       <div className="filters-section">
         <input
           type="text"
-          name="search"
+          name="title"
           placeholder="Search jobs or companies..."
-          value={filters.search}
+          value={filters.title}
           onChange={handleFilterChange}
           className="filter-input"
         />
@@ -57,9 +76,8 @@ const DisplayJobsPage = () => {
           className="filter-select"
         >
           <option value="">Employment Type</option>
-          <option value="full-time">Full Time</option>
-          <option value="part-time">Part Time</option>
-          <option value="contract">Contract</option>
+          <option value="full time">Full Time</option>
+          <option value="part time">Part Time</option>
           <option value="internship">Internship</option>
         </select>
         <select
@@ -70,7 +88,7 @@ const DisplayJobsPage = () => {
         >
           <option value="">Work Type</option>
           <option value="remote">Remote</option>
-          <option value="on-site">On Site</option>
+          <option value="on site">On Site</option>
           <option value="hybrid">Hybrid</option>
         </select>
       </div>
@@ -80,15 +98,20 @@ const DisplayJobsPage = () => {
           <div 
             key={job.id} 
             className="job-card"
-            onClick={() => setSelectedJob(job)}
+            onClick={() => handleJobClick(job)}
           >
             <div className="job-card-header">
+              <div className="employment-type-badge" data-type={job.employmentType?.toLowerCase()}>
+                {job.employmentType}
+              </div>
               <h3>{job.title}</h3>
-              <span className="company-name">{job.companyName}</span>
+              <p className="company-name">{job.companyName}</p>
             </div>
             <div className="job-card-body">
-              <p className="location">{job.location}</p>
-              <p className="employment-type">{job.employmentType}</p>
+              <div className="job-meta">
+                <span>{job.location}</span>
+                <span>{job.domain}</span>
+              </div>
             </div>
             <div className="job-card-footer">
               <span className="work-type">{job.workType}</span>
@@ -100,10 +123,10 @@ const DisplayJobsPage = () => {
         ))}
       </div>
 
-      {selectedJob && (
+      {showFullScreen && selectedJob && (
         <JobDetails 
           job={selectedJob} 
-          onClose={() => setSelectedJob(null)} 
+          onClose={handleCloseFullScreen}
         />
       )}
     </div>

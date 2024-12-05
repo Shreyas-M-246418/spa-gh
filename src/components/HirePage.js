@@ -30,24 +30,30 @@ const HirePage = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    const jobData = {
-      ...formData,
-      userId: user.id,
-      createdBy: user.name || user.username,
-      createdAt: new Date().toISOString(),
-    };
+  const handleSubmit = async () => {
+    try {
+      const jobData = {
+        ...formData,
+        userId: user.id,
+        createdBy: user.name || user.email,
+        createdAt: new Date().toISOString(),
+      };
 
-    addJob(jobData);
-    navigate('/jobs');
+      await addJob(jobData);
+      navigate('/jobs');
+    } catch (error) {
+      console.error('Error creating job:', error);
+    }
   };
 
   return (
     <div className="hire-page">
       <div className="hire-card">
         <div className="hire-card-header">
-          <h2>Creating New Job</h2>
-          <button className="close-button" onClick={() => navigate('/jobs')}>×</button>
+          <h2>Create New Job</h2>
+          <button className="close-button" onClick={() => navigate('/jobs')}>
+            ×
+          </button>
         </div>
         
         <div className="hire-card-content">
@@ -60,8 +66,8 @@ const HirePage = () => {
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleChange}
-                  className="form-input"
                   placeholder="Company Name"
+                  className="form-input"
                 />
               </div>
 
@@ -71,8 +77,8 @@ const HirePage = () => {
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  className="form-input"
                   placeholder="Location"
+                  className="form-input"
                 />
               </div>
 
@@ -90,6 +96,8 @@ const HirePage = () => {
                   <option value="DevOps">DevOps</option>
                   <option value="Mobile">Mobile</option>
                   <option value="UI/UX">UI/UX</option>
+                  <option value="Data Science">Data Science</option>
+                  <option value="Machine Learning">Machine Learning</option>
                 </select>
 
                 <select
@@ -100,7 +108,7 @@ const HirePage = () => {
                 >
                   <option value="">Work Type</option>
                   <option value="remote">Remote</option>
-                  <option value="on site">Onsite</option>
+                  <option value="on site">On-site</option>
                   <option value="hybrid">Hybrid</option>
                 </select>
               </div>
@@ -117,6 +125,17 @@ const HirePage = () => {
                   <option value="part time">Part Time</option>
                   <option value="internship">Internship</option>
                 </select>
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="applyLink"
+                  value={formData.applyLink}
+                  onChange={handleChange}
+                  placeholder="Application Link"
+                  className="form-input"
+                />
               </div>
             </div>
 
@@ -150,17 +169,6 @@ const HirePage = () => {
                   value={formData.salaryRange}
                   onChange={handleChange}
                   placeholder="Salary Range"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="applyLink"
-                  value={formData.applyLink}
-                  onChange={handleChange}
-                  placeholder="Application Link"
                   className="form-input"
                 />
               </div>
