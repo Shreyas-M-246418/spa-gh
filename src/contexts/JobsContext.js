@@ -29,7 +29,7 @@ export const JobsProvider = ({ children }) => {
 
   useEffect(() => {
     fetchJobs();
-  }, []);
+  }, [user]);
 
   const addJob = async (newJob) => {
     if (!user) return { success: false, error: 'User not authenticated' };
@@ -91,8 +91,8 @@ export const JobsProvider = ({ children }) => {
   };
 
   const getUserJobs = () => {
-    if (!user) return [];
-    return jobs.filter(job => job.createdBy === user.uid);
+    if (!user || !jobs) return [];
+    return (jobs || []).filter(job => job?.createdBy === user.uid);
   };
 
   const value = {
