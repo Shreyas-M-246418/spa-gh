@@ -13,8 +13,22 @@ const JobsPage = () => {
   const [filters, setFilters] = useState({
     title: '',
     location: '',
-    employmentType: []
+    userType: [],
+    domain: [],
+    employmentType: [],
+    workType: []
   });
+
+  const domains = [
+    'Frontend',
+    'Backend',
+    'Full Stack',
+    'DevOps',
+    'Mobile',
+    'UI/UX',
+    'Data Science',
+    'Machine Learning'
+  ];
 
   useEffect(() => {
     // Load jobs from localStorage for GitHub Pages demo
@@ -23,29 +37,103 @@ const JobsPage = () => {
   }, []);
 
   const handleFilterChange = (e, field) => {
+    setFilters({
+      ...filters,
+      [field]: e.target.value
+    });
+  };
+
+  const handleUserTypeChange = (e) => {
+    setFilters({
+      ...filters,
+      userType: [e.target.value]
+    });
+  };
+
+  const handleDomainChange = (e) => {
+    const value = e.target.value;
     setFilters(prev => ({
       ...prev,
-      [field]: e.target.value
+      domain: e.target.checked 
+        ? [...prev.domain, value]
+        : prev.domain.filter(item => item !== value)
     }));
   };
 
-  const handleEmploymentTypeChange = (type) => {
+  const handleClearFilter = (filterName) => {
     setFilters(prev => ({
       ...prev,
-      employmentType: prev.employmentType.includes(type)
-        ? prev.employmentType.filter(t => t !== type)
-        : [...prev.employmentType, type]
+      [filterName]: []
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      title: '',
+      location: '',
+      userType: [],
+      domain: [],
+      employmentType: [],
+      workType: []
+    });
+
+    const radioInputs = document.querySelectorAll('input[type="radio"]');
+    radioInputs.forEach(input => {
+      input.checked = false;
+    });
+
+    const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
+    checkboxInputs.forEach(input => {
+      input.checked = false;
+    });
+  };
+
+  const handleEmploymentTypeChange = (e) => {
+    const value = e.target.value;
+    setFilters(prev => ({
+      ...prev,
+      employmentType: e.target.checked 
+        ? [...prev.employmentType, value]
+        : prev.employmentType.filter(item => item !== value)
+    }));
+  };
+
+  const handleWorkTypeChange = (e) => {
+    const value = e.target.value;
+    setFilters(prev => ({
+      ...prev,
+      workType: e.target.checked 
+        ? [...prev.workType, value]
+        : prev.workType.filter(item => item !== value)
     }));
   };
 
   const filteredJobs = jobs.filter(job => {
-    const titleMatch = job.title.toLowerCase().includes(filters.title.toLowerCase()) ||
-      job.companyName.toLowerCase().includes(filters.title.toLowerCase());
-    const locationMatch = job.location.toLowerCase().includes(filters.location.toLowerCase());
-    const typeMatch = filters.employmentType.length === 0 || 
-      filters.employmentType.includes(job.employmentType);
+    const titleMatch = !filters.title || 
+      job.title.toLowerCase().includes(filters.title.toLowerCase()) ||
+      job.companyName?.toLowerCase().includes(filters.title.toLowerCase());
 
-    return titleMatch && locationMatch && typeMatch;
+    const locationMatch = !filters.location || 
+      job.location.toLowerCase().includes(filters.location.toLowerCase());
+
+    const userTypeMatch = filters.userType.length === 0 || 
+      filters.userType.includes(job.userType?.toLowerCase());
+
+    const domainMatch = filters.domain.length === 0 ||
+      filters.domain.includes(job.domain);
+
+    const employmentTypeMatch = filters.employmentType.length === 0 ||
+      filters.employmentType.includes(job.employmentType?.toLowerCase());
+
+    const workTypeMatch = filters.workType.length === 0 ||
+      filters.workType.includes(job.workType?.toLowerCase());
+
+    return titleMatch && 
+           locationMatch && 
+           userTypeMatch && 
+           domainMatch && 
+           employmentTypeMatch && 
+           workTypeMatch;
   });
 
   return (
