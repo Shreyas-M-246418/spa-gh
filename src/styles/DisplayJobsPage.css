@@ -91,7 +91,7 @@
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
-  padding: 90px 2rem 2rem 290px;
+  padding: 90px 2rem 2rem 2rem;
 }
 
 .filters-sidebar {
@@ -103,11 +103,14 @@
   position: sticky;
   top: calc(var(--navbar-height) + var(--filters-height) + 2rem);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-left: 2rem;
 }
 
 .jobs-container {
   flex: 1;
   min-width: 0;
+  max-width: calc(100% - 300px);
+  margin: 0 auto;
 }
 
 .jobs-header {

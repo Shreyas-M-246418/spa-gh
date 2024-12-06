@@ -194,6 +194,27 @@ const JobsPage = () => {
               </button>
             </div>
           </div>
+          <div className="filter-dropdown">
+            <button className={`filter-button ${filters.domain.length > 0 ? 'has-selection' : ''}`}>
+              Domain {filters.domain.length > 0 && `(${filters.domain.length})`}
+            </button>
+            <div className="dropdown-content">
+              {domains.map(domain => (
+                <label key={domain}>
+                  <input
+                    type="checkbox"
+                    value={domain}
+                    checked={filters.domain.includes(domain)}
+                    onChange={handleDomainChange}
+                  />
+                  {domain}
+                </label>
+              ))}
+              <button className="clear-filter" onClick={() => handleClearFilter('domain')}>
+                Clear
+              </button>
+            </div>
+          </div>
           <button onClick={clearFilters} className="clear-all-btn">
             clear all
           </button>
