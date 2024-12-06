@@ -49,12 +49,12 @@ const JobsPage = () => {
   });
 
   return (
-    <div className="dashboard-container">
+    <div className="page-container">
       <div className="search-filters">
         <div className="search-bar">
           <input
             type="text"
-            placeholder="Search by title or company"
+            placeholder="Title/skill or Company"
             value={filters.title}
             onChange={(e) => handleFilterChange(e, 'title')}
             className="search-input"
@@ -66,76 +66,118 @@ const JobsPage = () => {
             onChange={(e) => handleFilterChange(e, 'location')}
             className="search-input"
           />
+          <div className="filter-dropdown">
+            <button className={`filter-button ${filters.userType.length > 0 ? 'has-selection' : ''}`}>
+              User Type {filters.userType.length > 0 && `(${filters.userType.length})`}
+            </button>
+            <div className="dropdown-content">
+              <label>
+                <input
+                  type="radio"
+                  name="userType"
+                  value="fresher"
+                  checked={filters.userType.includes('fresher')}
+                  onChange={handleUserTypeChange}
+                />
+                Fresher
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="userType"
+                  value="professional"
+                  checked={filters.userType.includes('professional')}
+                  onChange={handleUserTypeChange}
+                />
+                Professional
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="userType"
+                  value="student"
+                  checked={filters.userType.includes('student')}
+                  onChange={handleUserTypeChange}
+                />
+                College Student
+              </label>
+              <button className="clear-filter" onClick={() => handleClearFilter('userType')}>
+                Clear
+              </button>
+            </div>
+          </div>
+          <button onClick={clearFilters} className="clear-all-btn">
+            clear all
+          </button>
         </div>
       </div>
-
+      
       <div className="main-content">
         <div className="filters-sidebar">
           <div className="filter-section">
             <h3>Employment Type</h3>
-            {['Full time', 'Part time', 'Internship'].map(type => (
-              <label key={type} className="checkbox-label">
+            {['Full time', 'Internship', 'Part time'].map(type => (
+              <label 
+                key={type} 
+                className="employment-type-label"
+                data-type={type.toLowerCase()}
+              >
                 <input
                   type="checkbox"
+                  className="employment-type-checkbox"
+                  data-type={type.toLowerCase()}
+                  value={type.toLowerCase()}
                   checked={filters.employmentType.includes(type.toLowerCase())}
-                  onChange={() => handleEmploymentTypeChange(type.toLowerCase())}
-                  className="checkbox-input"
+                  onChange={handleEmploymentTypeChange}
                 />
-                <span className="checkbox-text">{type}</span>
+                {type}
+              </label>
+            ))}
+          </div>
+          <div className="filter-section">
+            <h3>Work Type</h3>
+            {['On site', 'Remote', 'Hybrid', 'Field Work'].map(type => (
+              <label key={type}>
+                <input
+                  type="checkbox"
+                  value={type.toLowerCase()}
+                  checked={filters.workType.includes(type.toLowerCase())}
+                  onChange={handleWorkTypeChange}
+                />
+                {type}
               </label>
             ))}
           </div>
         </div>
-
-        <div className="jobs-content">
+        
+        <div className="jobs-container">
           <div className="jobs-header">
-            <h2>My Posted Jobs</h2>
-            <div className="header-buttons">
-              <button onClick={() => navigate('/hire')} className="post-job-btn">
-                <Plus size={20} />
-                Post New Job
-              </button>
-            </div>
+            <h1>Your Posted Jobs</h1>
+            <p className="results-count">
+              {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} posted
+            </p>
           </div>
-
           <div className="jobs-grid">
-            {filteredJobs.map(job => (
-              <div 
-                key={job.id} 
+            {jobs.map((job) => (
+              <div
+                key={job.id}
                 className="job-card"
-                onClick={() => setSelectedJob(job)}
+                data-employment-type={job.employmentType?.toLowerCase()}
               >
-                <div className="job-card-header">
-                  <h3>{job.title}</h3>
-                  <span className="employment-type-badge" data-type={job.employmentType}>
-                    {job.employmentType}
-                  </span>
+                <div className="employment-type-badge" data-type={job.employmentType?.toLowerCase()}>
+                  {job.employmentType}
                 </div>
-                <p className="company-name">{job.companyName}</p>
-                <p className="job-description">{job.description.substring(0, 150)}...</p>
-                <div className="job-location">
-                  <span>{job.location}</span>
-                  <span>{job.workType}</span>
+                <h3>{job.title}</h3>
+                <p>{job.description}</p>
+                <div className="job-details">
+                  {job.location && <span className="location">{job.location}</span>}
+                  {job.salary && <span className="salary">{job.salary}</span>}
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-
-      {selectedJob && (
-        <JobDetails 
-          job={selectedJob} 
-          onClose={() => setSelectedJob(null)}
-        />
-      )}
-
-      <button 
-        className="floating-add-button"
-        onClick={() => navigate('/hire')}
-      >
-        <Plus size={24} />
-      </button>
     </div>
   );
 };
