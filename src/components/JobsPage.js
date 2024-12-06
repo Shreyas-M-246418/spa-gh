@@ -108,6 +108,10 @@ const JobsPage = () => {
     }));
   };
 
+  const navigateToHire = () => {
+    navigate('/hire');
+  };
+
   const filteredJobs = jobs.filter(job => {
     const titleMatch = !filters.title || 
       job.title.toLowerCase().includes(filters.title.toLowerCase()) ||
