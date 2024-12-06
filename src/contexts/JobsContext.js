@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const JobsContext = createContext();
 
@@ -12,31 +13,77 @@ export const useJobs = () => {
 
 export const JobsProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
+  const { user } = useAuth();
+
+  const fetchJobs = async () => {
+    try {
+      const response = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json');
+      const data = await response.json();
+      const content = JSON.parse(atob(data.sha ? data.content : 'eyJqb2JzIjpbXX0=')); // Default to empty jobs array
+      setJobs(content.jobs);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      setJobs([]);
+    }
+  };
 
   useEffect(() => {
-    // Load jobs from localStorage or use initial data
-    const storedJobs = localStorage.getItem('jobs');
-    if (storedJobs) {
-      setJobs(JSON.parse(storedJobs));
-    }
+    fetchJobs();
   }, []);
 
-  const addJob = (newJob) => {
+  const addJob = async (newJob) => {
+    if (!user) return null;
+
     const jobToAdd = {
       ...newJob,
       id: Date.now(),
       createdAt: new Date().toISOString(),
+      createdBy: user.uid
     };
 
-    const updatedJobs = [...jobs, jobToAdd];
-    setJobs(updatedJobs);
-    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
-    return jobToAdd;
+    try {
+      // Get current file content
+      const response = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json');
+      const data = await response.json();
+      const currentContent = JSON.parse(atob(data.content));
+      
+      // Add new job
+      const updatedContent = {
+        jobs: [...currentContent.jobs, jobToAdd]
+      };
+
+      // Update file in repository
+      await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${user.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: 'Add new job',
+          content: btoa(JSON.stringify(updatedContent, null, 2)),
+          sha: data.sha
+        })
+      });
+
+      setJobs(updatedContent.jobs);
+      return jobToAdd;
+    } catch (error) {
+      console.error('Error adding job:', error);
+      return null;
+    }
+  };
+
+  const getUserJobs = () => {
+    if (!user) return [];
+    return jobs.filter(job => job.createdBy === user.uid);
   };
 
   const value = {
     jobs,
     addJob,
+    getUserJobs,
+    fetchJobs
   };
 
   return (

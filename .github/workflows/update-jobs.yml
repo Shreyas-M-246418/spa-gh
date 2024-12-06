@@ -1,0 +1,31 @@
+name: Update Jobs
+
+on:
+  repository_dispatch:
+    types: [update-jobs]
+
+jobs:
+  update-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Update jobs.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo '${{ github.event.client_payload.content }}' > src/data/jobs.json
+          
+      - name: Commit and push if changed
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git add src/data/jobs.json
+          git commit -m "Update jobs data" || exit 0
+          git push
+
+      - name: Trigger rebuild
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: rebuild-site

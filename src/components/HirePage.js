@@ -6,6 +6,8 @@ import '../styles/HirePage.css';
 
 const HirePage = () => {
   const navigate = useNavigate();
+  const { addJob } = useJobs();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     companyName: '',
     location: '',
@@ -19,7 +21,6 @@ const HirePage = () => {
     applyLink: '',
   });
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -28,19 +29,19 @@ const HirePage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would send to a server
-    // For GitHub Pages demo, we could store in localStorage
-    const jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
-    const newJob = {
-      ...formData,
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-    };
-    jobs.push(newJob);
-    localStorage.setItem('jobs', JSON.stringify(jobs));
-    navigate('/jobs');
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    const result = await addJob(formData);
+    if (result) {
+      navigate('/jobs');
+    } else {
+      alert('Failed to create job. Please try again.');
+    }
   };
 
   return (

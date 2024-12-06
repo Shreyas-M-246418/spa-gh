@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useJobs } from '../contexts/JobsContext';
@@ -7,9 +7,10 @@ import JobDetails from './JobDetails';
 import '../styles/JobsPage.css';
 
 const JobsPage = () => {
-  const navigate = useNavigate();
-  const [jobs, setJobs] = useState([]);
-  const [selectedJob, setSelectedJob] = useState(null);
+    const navigate = useNavigate();
+    const { getUserJobs } = useJobs();
+    const { user } = useAuth();
+    const [selectedJob, setSelectedJob] = useState(null);
   const [filters, setFilters] = useState({
     title: '',
     location: '',
@@ -18,6 +19,8 @@ const JobsPage = () => {
     employmentType: [],
     workType: []
   });
+
+  const userJobs = getUserJobs();
 
   const domains = [
     'Frontend',
@@ -29,12 +32,6 @@ const JobsPage = () => {
     'Data Science',
     'Machine Learning'
   ];
-
-  useEffect(() => {
-    // Load jobs from localStorage for GitHub Pages demo
-    const savedJobs = JSON.parse(localStorage.getItem('jobs') || '[]');
-    setJobs(savedJobs);
-  }, []);
 
   const handleFilterChange = (e, field) => {
     setFilters({
@@ -112,7 +109,7 @@ const JobsPage = () => {
     navigate('/hire');
   };
 
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = userJobs.filter(job => {
     const titleMatch = !filters.title || 
       job.title.toLowerCase().includes(filters.title.toLowerCase()) ||
       job.companyName?.toLowerCase().includes(filters.title.toLowerCase());
@@ -267,11 +264,11 @@ const JobsPage = () => {
           <div className="jobs-header">
             <h1>Your Posted Jobs</h1>
             <p className="results-count">
-              {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} posted
+              {userJobs.length} {userJobs.length === 1 ? 'job' : 'jobs'} posted
             </p>
           </div>
           <div className="jobs-grid">
-            {jobs.map((job) => (
+            {filteredJobs.map((job) => (
               <div
                 key={job.id}
                 className="job-card"
