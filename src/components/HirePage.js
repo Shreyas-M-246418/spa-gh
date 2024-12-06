@@ -8,6 +8,8 @@ const HirePage = () => {
   const navigate = useNavigate();
   const { addJob } = useJobs();
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     companyName: '',
     location: '',
@@ -36,9 +38,6 @@ const HirePage = () => {
       return;
     }
     
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState(null);
-
     setIsSubmitting(true);
     setError(null);
     
