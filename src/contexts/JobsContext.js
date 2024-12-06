@@ -55,10 +55,11 @@ export const JobsProvider = ({ children }) => {
 
       const data = await response.json();
       const currentContent = JSON.parse(atob(data.content));
+      const existingJobs = currentContent.jobs || [];  // Add fallback for empty jobs array
       
       // Add new job
       const updatedContent = {
-        jobs: [...currentContent.jobs, jobToAdd]
+        jobs: [...existingJobs, jobToAdd]
       };
 
       // Update file in repository
