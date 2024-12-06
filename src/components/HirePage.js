@@ -36,11 +36,19 @@ const HirePage = () => {
       return;
     }
     
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+
+    setIsSubmitting(true);
+    setError(null);
+    
     const result = await addJob(formData);
-    if (result) {
+    setIsSubmitting(false);
+    
+    if (result.success) {
       navigate('/jobs');
     } else {
-      alert('Failed to create job. Please try again.');
+      setError(result.error || 'Failed to create job. Please try again.');
     }
   };
 
@@ -53,6 +61,16 @@ const HirePage = () => {
         </div>
         
         <form onSubmit={handleSubmit} className="hire-card-content">
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+          {isSubmitting && (
+            <div className="loading-message">
+              Posting job...
+            </div>
+          )}
           <div className="form-grid">
             {/* Left Column */}
             <div className="form-column">

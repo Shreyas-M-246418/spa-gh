@@ -150,3 +150,21 @@
       padding: 1.5rem;
     }
   }
+  
+  .error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    border: 1px solid #ef9a9a;
+  }
+  
+  .loading-message {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    border: 1px solid #90caf9;
+  }

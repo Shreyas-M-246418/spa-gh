@@ -32,7 +32,7 @@ export const JobsProvider = ({ children }) => {
   }, []);
 
   const addJob = async (newJob) => {
-    if (!user) return null;
+    if (!user) return { success: false, error: 'User not authenticated' };
 
     const jobToAdd = {
       ...newJob,
@@ -43,7 +43,16 @@ export const JobsProvider = ({ children }) => {
 
     try {
       // Get current file content
-      const response = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json');
+      const response = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
+        headers: {
+          'Authorization': `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`,
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+
       const data = await response.json();
       const currentContent = JSON.parse(atob(data.content));
       
@@ -53,10 +62,10 @@ export const JobsProvider = ({ children }) => {
       };
 
       // Update file in repository
-      await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
+      const updateResponse = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${user.accessToken}`,
+          'Authorization': `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -66,11 +75,18 @@ export const JobsProvider = ({ children }) => {
         })
       });
 
+      if (!updateResponse.ok) {
+        throw new Error(`Failed to create job: ${updateResponse.status}`);
+      }
+
       setJobs(updatedContent.jobs);
-      return jobToAdd;
+      return { success: true, job: jobToAdd };
     } catch (error) {
       console.error('Error adding job:', error);
-      return null;
+      return { 
+        success: false, 
+        error: error.message || 'Failed to add job to repository'
+      };
     }
   };
 
