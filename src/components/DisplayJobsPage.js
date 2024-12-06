@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useJobs } from '../contexts/JobsContext';
 import JobDetails from './JobDetails';
 import '../styles/DisplayJobsPage.css';
 
 const DisplayJobsPage = () => {
-  const { jobs } = useJobs();
+  const { jobs, fetchJobs } = useJobs();
   const [selectedJob, setSelectedJob] = useState(null);
   const [showFullScreen, setShowFullScreen] = useState(false);
   const [filters, setFilters] = useState({
@@ -15,6 +15,10 @@ const DisplayJobsPage = () => {
     employmentType: [],
     workType: []
   });
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   const domains = [
     'Frontend',
@@ -109,13 +113,15 @@ const DisplayJobsPage = () => {
     }));
   };
 
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = jobs?.filter(job => {
+    if (!job) return false;
+
     const titleMatch = !filters.title || 
-      job.title.toLowerCase().includes(filters.title.toLowerCase()) ||
+      job.title?.toLowerCase().includes(filters.title.toLowerCase()) ||
       job.companyName?.toLowerCase().includes(filters.title.toLowerCase());
 
     const locationMatch = !filters.location || 
-      job.location.toLowerCase().includes(filters.location.toLowerCase());
+      job.location?.toLowerCase().includes(filters.location.toLowerCase());
 
     const userTypeMatch = filters.userType.length === 0 || 
       filters.userType.includes(job.userType?.toLowerCase());
@@ -135,7 +141,7 @@ const DisplayJobsPage = () => {
            domainMatch && 
            employmentTypeMatch && 
            workTypeMatch;
-  });
+  }) || [];
 
   return (
     <div className="page-container">
