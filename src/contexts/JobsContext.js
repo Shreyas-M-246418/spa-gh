@@ -34,8 +34,11 @@ export const JobsProvider = ({ children }) => {
   const addJob = async (newJob) => {
     if (!user) return { success: false, error: 'User not authenticated' };
 
-    console.log('User token exists:', !!user.accessToken);
-    
+    const githubToken = sessionStorage.getItem('github_token');
+    if (!githubToken) {
+      return { success: false, error: 'GitHub token not available. Please log in again.' };
+    }
+
     const jobToAdd = {
       ...newJob,
       id: Date.now(),
@@ -44,13 +47,9 @@ export const JobsProvider = ({ children }) => {
     };
 
     try {
-      if (!user.accessToken) {
-        throw new Error('GitHub access token not available');
-      }
-
       const response = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
         headers: {
-          'Authorization': `token ${user.accessToken}`,
+          'Authorization': `token ${githubToken}`,
           'Accept': 'application/vnd.github.v3+json'
         }
       });
@@ -72,7 +71,7 @@ export const JobsProvider = ({ children }) => {
       const updateResponse = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
         method: 'PUT',
         headers: {
-          'Authorization': `token ${user.accessToken}`,
+          'Authorization': `token ${githubToken}`,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
         },

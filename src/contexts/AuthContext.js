@@ -44,13 +44,14 @@ export const AuthProvider = ({ children }) => {
       const credential = GithubAuthProvider.credentialFromResult(result);
       const token = credential.accessToken;
       
+      sessionStorage.setItem('github_token', token);
+      
       setUser({
         id: result.user.uid,
         name: result.user.displayName,
         email: result.user.email,
         avatar: result.user.photoURL,
-        username: result.user.reloadUserInfo.screenName,
-        accessToken: token
+        username: result.user.reloadUserInfo.screenName
       });
       
       navigate('/jobs');
@@ -62,6 +63,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await signOut(auth);
+      sessionStorage.removeItem('github_token');
+      setUser(null);
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
