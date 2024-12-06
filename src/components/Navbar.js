@@ -1,11 +1,11 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Navbar.css';
 
-function Navbar() {
-  const { user, logout } = useAuth();
+const Navbar = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -13,23 +13,27 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="top-navbar">
       <div className="nav-left">
-        <Link to="/" className="nav-brand">JobHub</Link>
+        <a href="/" className="nav-brand">
+          JobHub
+        </a>
       </div>
       <div className="nav-right">
-        {user ? (
+        {isAuthenticated ? (
           <>
-            <Link to="/jobs" className="nav-link">My Jobs</Link>
-            <Link to="/hire" className="nav-link">Post Job</Link>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <a href="/jobs" className="nav-link">My Jobs</a>
+            <a href="/hire" className="nav-link">Post Job</a>
+            <button onClick={handleLogout} className="logout-button">
+              Logout
+            </button>
           </>
         ) : (
-          <Link to="/login" className="login-btn">Login</Link>
+          <a href="/login" className="login-button">Login</a>
         )}
       </div>
     </nav>
   );
-}
+};
 
 export default Navbar;
