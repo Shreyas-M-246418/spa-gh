@@ -45,7 +45,8 @@ export const JobsProvider = ({ children }) => {
       // Get current file content
       const response = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
         headers: {
-          'Authorization': `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`,
+          'Authorization': `token ${process.env.REACT_APP_GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
         }
       });
       
@@ -55,9 +56,8 @@ export const JobsProvider = ({ children }) => {
 
       const data = await response.json();
       const currentContent = JSON.parse(atob(data.content));
-      const existingJobs = currentContent.jobs || [];  // Add fallback for empty jobs array
-      
-      // Add new job
+      const existingJobs = currentContent.jobs || [];
+
       const updatedContent = {
         jobs: [...existingJobs, jobToAdd]
       };
@@ -66,7 +66,8 @@ export const JobsProvider = ({ children }) => {
       const updateResponse = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/contents/src/data/jobs.json', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${process.env.REACT_APP_GITHUB_TOKEN}`,
+          'Authorization': `token ${process.env.REACT_APP_GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -77,7 +78,8 @@ export const JobsProvider = ({ children }) => {
       });
 
       if (!updateResponse.ok) {
-        throw new Error(`Failed to create job: ${updateResponse.status}`);
+        const errorData = await updateResponse.json();
+        throw new Error(`Failed to create job: ${updateResponse.status} - ${JSON.stringify(errorData)}`);
       }
 
       setJobs(updatedContent.jobs);
