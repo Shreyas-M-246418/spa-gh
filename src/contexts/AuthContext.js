@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { auth, githubProvider } from '../firebase/config';
+import { GithubAuthProvider } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -39,7 +40,19 @@ export const AuthProvider = ({ children }) => {
 
   const login = async () => {
     try {
-      await signInWithPopup(auth, githubProvider);
+      const result = await signInWithPopup(auth, githubProvider);
+      const credential = GithubAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      
+      setUser({
+        id: result.user.uid,
+        name: result.user.displayName,
+        email: result.user.email,
+        avatar: result.user.photoURL,
+        username: result.user.reloadUserInfo.screenName,
+        accessToken: token
+      });
+      
       navigate('/jobs');
     } catch (error) {
       console.error('Login error:', error);
