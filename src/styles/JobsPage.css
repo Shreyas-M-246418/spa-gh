@@ -103,7 +103,7 @@
     position: sticky;
     top: calc(var(--navbar-height) + var(--filters-height) + 2rem);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    margin-left: 2rem;
+    margin-left: 1.5rem;
   }
   
   .jobs-container {
@@ -339,4 +339,28 @@
   
   @keyframes l24 {
     100% { transform: rotate(1turn) }
+  }
+  
+  .floating-add-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+    z-index: 1000;
+  }
+  
+  .floating-add-button:hover {
+    transform: scale(1.1);
+    background-color: #357abd;
   }

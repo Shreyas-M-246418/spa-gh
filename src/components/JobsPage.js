@@ -287,6 +287,9 @@ const JobsPage = () => {
           </div>
         </div>
       </div>
+      <button onClick={navigateToHire} className="floating-add-button">
+        <Plus size={36} />
+      </button>
     </div>
   );
 };
