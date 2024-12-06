@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { useAuth } from './AuthContext';
+import githubApi from '../utils/githubApi';
 
 const JobsContext = createContext();
 
@@ -17,11 +18,8 @@ export const JobsProvider = ({ children }) => {
 
   const fetchJobs = async () => {
     try {
-      const response = await fetch(`https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/contents/${process.env.REACT_APP_JOBS_FILE_PATH}`);
-      if (!response.ok) throw new Error('Failed to fetch jobs');
-      const data = await response.json();
-      const content = JSON.parse(atob(data.content));
-      setJobs(content.jobs || []);
+      const jobsList = await githubApi.getJobs();
+      setJobs(jobsList);
     } catch (error) {
       console.error('Error fetching jobs:', error);
       setJobs([]);
@@ -39,41 +37,20 @@ export const JobsProvider = ({ children }) => {
     };
 
     try {
-      const response = await fetch('https://api.github.com/repos/Shreyas-M-246418/spa-gh/dispatches', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `Bearer ${process.env.REACT_APP_REPO_TOKEN}`
-        },
-        body: JSON.stringify({
-          event_type: 'add-job',
-          client_payload: {
-            job: jobToAdd
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to trigger job creation');
+      const result = await githubApi.createJob(jobToAdd);
+      if (result.success) {
+        setJobs(prev => [...prev, jobToAdd]);
       }
-
-      setJobs(prev => [...prev, jobToAdd]);
-      return { success: true, job: jobToAdd };
+      return result;
     } catch (error) {
       console.error('Error adding job:', error);
       return { success: false, error: error.message };
     }
   };
 
-  const getUserJobs = () => {
-    if (!user || !jobs) return [];
-    return (jobs || []).filter(job => job?.createdBy === user.uid);
-  };
-
   const value = {
     jobs,
     addJob,
-    getUserJobs,
     fetchJobs
   };
 
