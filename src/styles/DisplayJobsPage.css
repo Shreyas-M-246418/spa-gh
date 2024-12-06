@@ -3,7 +3,7 @@
   --internship-color: #9C27B0;
   --part-time-color: #2196F3;
   --navbar-height: 64px;
-  --filters-height: 80px;
+  --filters-height: 70px;
 }
 
 .page-container {
@@ -22,7 +22,7 @@
   padding: 0.35rem 1rem;
   width: 100%;
   position: fixed;
-  top: var(--navbar-height);
+  top: calc(var(--navbar-height) + 10px);
   left: 0;
   right: 0;
   z-index: 999;
@@ -34,11 +34,11 @@
   display: flex;
   gap: 1rem;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 4rem;
+  padding: 0 12rem;
 }
 
 .search-input {
@@ -79,7 +79,7 @@
   border: none;
   cursor: pointer;
   font-size: 0.95rem;
-  margin-left: auto;
+  margin-left: 1rem;
   padding: 0.65rem 1rem;
 }
 
