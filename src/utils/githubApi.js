@@ -1,10 +1,11 @@
 const githubApi = {
     async getJobs() {
+      const token = sessionStorage.getItem('github_token');
       const response = await fetch(
         `https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/contents/${process.env.REACT_APP_JOBS_FILE_PATH}`,
         {
           headers: {
-            Authorization: `token ${process.env.REACT_APP_REPO_TOKEN}`,
+            Authorization: `Bearer ${token}`,
             Accept: "application/vnd.github.v3+json",
           },
         }
@@ -15,11 +16,12 @@ const githubApi = {
     },
   
     async createJob(job) {
+      const token = sessionStorage.getItem('github_token');
       const response = await fetch(
         `https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/contents/${process.env.REACT_APP_JOBS_FILE_PATH}`,
         {
           headers: {
-            Authorization: `token ${process.env.REACT_APP_REPO_TOKEN}`,
+            Authorization: `Bearer ${token}`,
             Accept: "application/vnd.github.v3+json",
           },
         }
@@ -37,7 +39,7 @@ const githubApi = {
         {
           method: "PUT",
           headers: {
-            Authorization: `token ${process.env.REACT_APP_REPO_TOKEN}`,
+            Authorization: `Bearer ${token}`,
             Accept: "application/vnd.github.v3+json",
             "Content-Type": "application/json",
           },
