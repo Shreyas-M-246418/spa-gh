@@ -1,58 +1,37 @@
 const githubApi = {
     async getJobs() {
-      const token = sessionStorage.getItem('github_token');
+      // Using raw.githubusercontent.com for public reads
       const response = await fetch(
-        `https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/contents/${process.env.REACT_APP_JOBS_FILE_PATH}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/vnd.github.v3+json",
-          },
-        }
+        `https://raw.githubusercontent.com/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/main/${process.env.REACT_APP_JOBS_FILE_PATH}`
       );
-      const data = await response.json();
-      const content = JSON.parse(Buffer.from(data.content, "base64").toString());
+      const content = await response.json();
       return content.jobs || [];
     },
-  
+
     async createJob(job) {
-      const token = sessionStorage.getItem('github_token');
+      // Create a dispatch event to the backend
       const response = await fetch(
-        `https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/contents/${process.env.REACT_APP_JOBS_FILE_PATH}`,
+        `https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/dispatches`,
         {
+          method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/vnd.github.v3+json",
-          },
-        }
-      );
-  
-      const fileData = await response.json();
-      const currentContent = JSON.parse(Buffer.from(fileData.content, "base64").toString());
-  
-      const updatedContent = {
-        jobs: [...(currentContent.jobs || []), job],
-      };
-  
-      await fetch(
-        `https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/contents/${process.env.REACT_APP_JOBS_FILE_PATH}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/vnd.github.v3+json",
-            "Content-Type": "application/json",
+            'Authorization': `Bearer ${sessionStorage.getItem('github_token')}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            message: "Add new job",
-            content: Buffer.from(JSON.stringify(updatedContent, null, 2)).toString("base64"),
-            sha: fileData.sha,
-          }),
+            event_type: 'add-job',
+            client_payload: { job }
+          })
         }
       );
-  
+      
+      if (!response.ok) {
+        throw new Error('Failed to create job');
+      }
+      
       return { success: true, job };
     }
-  };
-  
-  export default githubApi;
+};
+
+export default githubApi;
