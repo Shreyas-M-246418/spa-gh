@@ -12,21 +12,21 @@ jobs:
       
       - name: Update jobs.json
         env:
-          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Get current jobs
-          content=$(curl -s -H "Authorization: token $REPO_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/contents/src/data/jobs.json")
+          content=$(curl -s \
+            "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/src/data/jobs.json")
           
-          # Decode and update content
-          current_jobs=$(echo $content | jq -r '.content' | base64 --decode)
-          updated_content=$(echo $current_jobs | jq '.jobs += [${{ toJSON(github.event.client_payload.job) }}]')
+          # Update content
+          updated_content=$(echo $content | jq '.jobs += [${{ toJSON(github.event.client_payload.job) }}]')
           
-          # Encode and update file
-          encoded_content=$(echo "$updated_content" | base64)
-          sha=$(echo $content | jq -r '.sha')
+          # Write updated content
+          echo '$updated_content' > src/data/jobs.json
           
-          curl -X PUT -H "Authorization: token $REPO_TOKEN" \
-            -H "Content-Type: application/json" \
-            "https://api.github.com/repos/${{ github.repository }}/contents/src/data/jobs.json" \
-            -d "{\"message\":\"Add new job\",\"content\":\"$encoded_content\",\"sha\":\"$sha\"}" 
+          # Commit and push changes
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git add src/data/jobs.json
+          git commit -m "Add new job"
+          git push

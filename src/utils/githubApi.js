@@ -1,6 +1,6 @@
 const githubApi = {
     async getJobs() {
-      // Using raw.githubusercontent.com for public reads
+      // Public read - no token needed
       const response = await fetch(
         `https://raw.githubusercontent.com/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/main/${process.env.REACT_APP_JOBS_FILE_PATH}`
       );
@@ -9,13 +9,12 @@ const githubApi = {
     },
 
     async createJob(job) {
-      // Create a dispatch event to the backend
+      // Use repository_dispatch event without token
       const response = await fetch(
         `https://api.github.com/repos/${process.env.REACT_APP_REPO_OWNER}/${process.env.REACT_APP_REPO_NAME}/dispatches`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('github_token')}`,
             'Accept': 'application/vnd.github.v3+json',
             'Content-Type': 'application/json'
           },
